@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcium IQ Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.2);
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 5px;
+        }
+        
+        .question-number {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .question {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .options {
+            display: grid;
+            grid-gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .option:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .option.selected {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #prev-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        #prev-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        #next-btn, #submit-btn {
+            background: white;
+            color: #6a11cb;
+        }
+        
+        #next-btn:hover, #submit-btn:hover {
+            background: #f8f8f8;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result-container {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            margin: 0 auto 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 5px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .iq-score {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        
+        .iq-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .correct-answers {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .message {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        #restart-btn {
+            background: white;
+            color: #6a11cb;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+        }
+        
+        #restart-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .question {
+                font-size: 1.2rem;
+            }
+            
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .iq-score {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="quiz-container">
+            <header>
+                <h1>Arcium IQ Quiz</h1>
+                <p class="description">Test your knowledge about Arcium and earn your IQ score!</p>
+            </header>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="question-number" id="question-number">Question 1 of 9</div>
+            <div class="question" id="question"></div>
+            
+            <div class="options" id="options"></div>
+            
+            <div class="buttons">
+                <button id="prev-btn" disabled>Previous</button>
+                <button id="next-btn">Next</button>
+                <button id="submit-btn" class="hidden">Submit Answers</button>
+            </div>
+        </div>
+        
+        <div id="result-container" class="result-container hidden">
+            <div class="score-circle">
+                <span class="iq-score" id="iq-score">0</span>
+                <span class="iq-label">IQ Score</span>
+            </div>
+            
+            <div class="correct-answers" id="correct-answers"></div>
+            
+            <div class="message" id="message"></div>
+            
+            <button id="restart-btn">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions data
+        const questions = [
+            {
+                question: "Which programming language is primarily used for writing confidential instructions with Arcium?",
+                options: ["Python", "Rust", "Java", "Go"],
+                correct: 1
+            },
+            {
+                question: "What is the function of the arcium CLI?",
+                options: [
+                    "To mine tokens",
+                    "To build and manage MXE projects",
+                    "To manage hardware",
+                    "To monitor network traffic"
+                ],
+                correct: 1
+            },
+            {
+                question: "What kind of DeFi applications can be built with Arcium?",
+                options: [
+                    "Public block explorers",
+                    "Dark pools and private order books",
+                    "Meme token launchpads",
+                    "NFT marketplaces only"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the main advantage of Arcium over FHE for computation speed?",
+                options: [
+                    "FHE is faster",
+                    "Arcium's MPC is thousands of times faster for many operations",
+                    "FHE has more privacy",
+                    "No difference"
+                ],
+                correct: 1
+            },
+            {
+                question: "How does Arcium ensure verifiability of computations?",
+                options: [
+                    "Through economic incentives only",
+                    "Through public audit mechanisms and cryptographic proofs",
+                    "Through manual review",
+                    "Through random sampling"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is a developer interface for Arcium?",
+                options: [
+                    "Only command line tools",
+                    "Web-based graphical interface and Solana-compatible SDK",
+                    "Mobile app only",
+                    "Hardware device"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the purpose of the encrypted-ixs directory in an Arcium MXE project?",
+                options: [
+                    "To store public APIs",
+                    "To write and store code that operates on encrypted data",
+                    "To log user data",
+                    "To manage user accounts"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the role of callback instructions in Arcium programs?",
+                options: [
+                    "To initialize the network",
+                    "To return computation results from the MPC cluster",
+                    "To generate new tokens",
+                    "To encrypt user passwords"
+                ],
+                correct: 1
+            },
+            {
+                question: "How does Arcium handle multi-chain compatibility?",
+                options: [
+                    "It is only compatible with Solana",
+                    "It is designed to be multi-chain compatible",
+                    "Only works with Ethereum",
+                    "Only works offline"
+                ],
+                correct: 1
+            }
+        ];
+
+        // DOM elements
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+        const questionNumber = document.getElementById('question-number');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const progressBar = document.getElementById('progress-bar');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const iqScore = document.getElementById('iq-score');
+        const correctAnswersElement = document.getElementById('correct-answers');
+        const messageElement = document.getElementById('message');
+
+        // Quiz state
+        let currentQuestion = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let score = 0;
+
+        // Initialize the quiz
+        function initQuiz() {
+            showQuestion(currentQuestion);
+            updateProgressBar();
+            updateButtons();
+        }
+
+        // Show current question
+        function showQuestion(index) {
+            const question = questions[index];
+            questionNumber.textContent = `Question ${index + 1} of ${questions.length}`;
+            questionElement.textContent = question.question;
+            
+            optionsElement.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                if (userAnswers[index] === i) {
+                    optionElement.classList.add('selected');
+                }
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => selectOption(i));
+                optionsElement.appendChild(optionElement);
+            });
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+            showQuestion(currentQuestion);
+            updateButtons();
+        }
+
+        // Update navigation buttons
+        function updateButtons() {
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Next question
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+                updateProgressBar();
+                updateButtons();
+            }
+        }
+
+        // Previous question
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+                updateProgressBar();
+                updateButtons();
+            }
+        }
+
+        // Calculate IQ score based on correct answers
+        function calculateIQScore() {
+            score = 0;
+            questions.forEach((question, index) => {
+                if (userAnswers[index] === question.correct) {
+                    score++;
+                }
+            });
+            
+            // Calculate IQ based on correct answers (80 is minimum, 170 is maximum for 9 questions)
+            const iq = Math.round(80 + (score / questions.length) * 90);
+            return iq;
+        }
+
+        // Generate a message based on IQ score
+        function generateMessage(iq) {
+            if (iq >= 150) {
+                return "Exceptional! Your knowledge of Arcium is truly impressive. You're among the top minds in this field!";
+            } else if (iq >= 130) {
+                return "Excellent! You have a strong understanding of Arcium concepts and technology.";
+            } else if (iq >= 110) {
+                return "Good job! You have a solid grasp of Arcium fundamentals with room to grow.";
+            } else if (iq >= 90) {
+                return "Fair understanding. Consider exploring Arcium's documentation to enhance your knowledge.";
+            } else {
+                return "Keep learning! The world of Arcium is complex but rewarding. Try again after studying more.";
+            }
+        }
+
+        // Show results
+        function showResults() {
+            const iq = calculateIQScore();
+            iqScore.textContent = iq;
+            correctAnswersElement.textContent = `You got ${score} out of ${questions.length} questions correct.`;
+            messageElement.textContent = generateMessage(iq);
+            
+            quizContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            
+            // Change background to purple when quiz is completed
+            document.body.style.background = "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)";
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            userAnswers = new Array(questions.length).fill(null);
+            score = 0;
+            
+            quizContainer.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            
+            initQuiz();
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', nextQuestion);
+        prevBtn.addEventListener('click', prevQuestion);
+        submitBtn.addEventListener('click', showResults);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initialize the quiz
+        initQuiz();
+    </script>
+</body>
+</html>
